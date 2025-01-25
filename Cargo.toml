@@ -1,0 +1,33 @@
+[package]
+name = "asterisk-ari-rs"
+version = "0.1.0"
+edition = "2021"
+description = "Asterisk ARI client"
+repository = "https:://github.com/jbernavaprah/asterisk-ari-rs"
+license = "MIT"
+readme = "README.md"
+keywords = ["asterisk", "ari", "voip"]
+categories = ["network-programming", "api-bindings"]
+
+publish = false
+
+[dependencies]
+tracing = "^0.1.41"
+serde = { version = "^1", features = ["derive"] }
+serde_json = "^1"
+reqwest = { version = "^0.12.12", features = ["json"] }
+base64 = "^0.22.1"
+tokio = { version = "^1.43.0", default-features = false, features = ["macros", "time", "rt-multi-thread"] }
+tokio-tungstenite = { version = "^0.26.1", features = ["connect", "url", "stream"] }
+tokio-stream = "0.1.17"
+url = "^2.5.4"
+chrono = { version = "^0.4.31", features = ["serde"] }
+tokio-util = "^0.7.13"
+derive-new = "^0.7.0"
+derive_setters = "^0.1.6"
+rand = "0.8.5"
+futures-util = "0.3.31"
+
+[dev-dependencies]
+tokio = { version = "1.43.0", features = ["full"] }
+tracing-subscriber = "0.3.19"
