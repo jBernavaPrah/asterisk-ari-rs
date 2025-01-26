@@ -28,6 +28,8 @@ asterisk-ari-rs = "x.y.z" # Replace x.y.z with the latest version
 
 Here's a basic example of how to use the library:
 
+First spin the Asterisk server with ARI & HTTP enabled, or use the dockerized example. See [/asterisk](/asterisk/README.md) for more details.)
+
 ```rust
 use asterisk_ari_rs::apis::channels;
 use asterisk_ari_rs::AriClient;

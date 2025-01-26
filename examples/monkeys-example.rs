@@ -40,7 +40,7 @@ async fn main() -> Result<()> {
 
     let _client = client.clone();
     tokio::spawn(async move {
-        _client.start("my-application".to_string()).await.unwrap();
+        _client.start("my-ast-app".to_string()).await.unwrap();
     });
 
     tokio::time::sleep(std::time::Duration::from_secs(30)).await;
