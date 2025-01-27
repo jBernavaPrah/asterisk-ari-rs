@@ -47,7 +47,7 @@ impl<'c> Endpoints<'c> {
         self.client
             .put_with_query(
                 "/endpoints/sendMessage",
-                request.variables.clone(),
+                &request.variables,
                 &request,
             )
             .await
@@ -65,7 +65,7 @@ impl<'c> Endpoints<'c> {
                     request.tech, request.resource
                 )
                 .as_str(),
-                request.variables.clone(),
+                &request.variables,
                 &request,
             )
             .await
@@ -74,7 +74,7 @@ impl<'c> Endpoints<'c> {
     /// Refer an endpoint or technology URI to some technology URI or endpoint
     pub async fn refer(&self, request: params::ReferRequest) -> crate::errors::Result<()> {
         self.client
-            .put_with_query("/endpoints/refer", request.variables.clone(), &request)
+            .put_with_query("/endpoints/refer", &request.variables, &request)
             .await
     }
 
@@ -86,7 +86,7 @@ impl<'c> Endpoints<'c> {
         self.client
             .post_with_query(
                 format!("/endpoints/{}/{}/refer", request.tech, request.resource).as_str(),
-                request.variables.clone(),
+                &request.variables,
                 &request,
             )
             .await

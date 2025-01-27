@@ -19,7 +19,7 @@ impl<'c> Events<'c> {
         self.client
             .post_with_query(
                 format!("/events/user/{}", request.event_name).as_str(),
-                request.variables.clone(),
+                &request.variables,
                 &request,
             )
             .await

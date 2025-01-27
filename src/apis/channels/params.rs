@@ -565,3 +565,92 @@ pub struct DialRequest {
     #[new(default)]
     timeout: Option<u32>,
 }
+
+#[derive(Clone, Debug, Default, PartialEq, Serialize, new, Setters)]
+#[setters(prefix = "with_")]
+#[setters(into, strip_option)]
+#[serde(rename_all = "camelCase")]
+pub struct ExternalMediaRequest {
+    /// Stasis Application to place channel into.
+    #[setters(skip)]
+    #[new(into)]
+    app: String,
+
+    /// Hostname/ip:port of external host.
+    #[setters(skip)]
+    #[new(into)]
+    external_host: String,
+
+    /// Format to encode audio in.
+    #[setters(skip)]
+    #[new(into)]
+    format: String,
+
+    /// The unique id to assign the channel on creation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    channel_id: Option<String>,
+
+    /// The "variables" key in the body object holds variable key/value pairs to set on the channel on creation.
+    ///
+    /// Other keys in the body object are interpreted as query parameters.
+    /// Ex. { "endpoint": "SIP/Alice", "variables": { "CALLERID(name)": "Alice" } }
+    #[serde(skip_serializing)]
+    #[new(default)]
+    pub(crate) variables: Option<serde_json::Value>,
+
+    /// Payload encapsulation protocol.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    encapsulation: Option<Encapsulation>,
+
+    /// Transport protocol.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    transport: Option<Transport>,
+
+    /// Connection type (client/server)	.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    connection_type: Option<ConnectionType>,
+
+    /// External media direction.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    direction: Option<Direction>,
+
+    /// An arbitrary data field.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[new(default)]
+    data: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Default, PartialEq)]
+pub enum ConnectionType {
+    #[default]
+    #[serde(rename = "client")]
+    Client,
+
+    #[serde(rename = "server")]
+    Server,
+}
+
+#[derive(Clone, Debug, Serialize, Default, PartialEq)]
+pub enum Transport {
+    #[serde(rename = "udp")]
+    #[default]
+    Udp,
+
+    #[serde(rename = "tcp")]
+    Tcp,
+}
+
+#[derive(Clone, Debug, Serialize, Default, PartialEq)]
+pub enum Encapsulation {
+    #[serde(rename = "rtp")]
+    #[default]
+    Rtp,
+
+    #[serde(rename = "audiosocket")]
+    AudioSocket,
+}

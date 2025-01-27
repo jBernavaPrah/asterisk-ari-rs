@@ -40,7 +40,7 @@ impl<'c> Channels<'c> {
         request: params::OriginateRequest,
     ) -> crate::errors::Result<models::Channel> {
         self.client
-            .post_with_query("/channels", request.variables.clone(), &request)
+            .post_with_query("/channels", &request.variables, &request)
             .await
     }
 
@@ -54,7 +54,7 @@ impl<'c> Channels<'c> {
         request: params::CreateRequest,
     ) -> crate::errors::Result<models::Channel> {
         self.client
-            .post_with_query("/channels", request.variables.clone(), &request)
+            .post_with_query("/channels", &request.variables, &request)
             .await
     }
 
@@ -70,7 +70,7 @@ impl<'c> Channels<'c> {
         self.client
             .post_with_query(
                 format!("/channels/{}", request.channel_id).as_str(),
-                request.variables.clone(),
+                &request.variables,
                 &request,
             )
             .await
@@ -417,6 +417,17 @@ impl<'c> Channels<'c> {
     ) -> crate::errors::Result<models::RTPStatistics> {
         self.client
             .get(format!("/channels/{channel_id}/rtp_statistics").as_str())
+            .await
+    }
+
+    /// Start an External Media session.
+    pub async fn external_media(&self, request: params::ExternalMediaRequest) -> crate::errors::Result<()> {
+        self.client
+            .post_with_query(
+                "/channels/externalMedia",
+                &request.variables,
+                &request,
+            )
             .await
     }
 }
