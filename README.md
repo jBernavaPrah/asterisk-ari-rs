@@ -1,10 +1,10 @@
 # Asterisk ARI Client
 
-[![CI](https://github.com/jbernavaprah/asterisk-ari-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/jbernavaprah/asterisk-ari-rs/actions/workflows/ci.yml)
+[![CI](https://github.com/jBernavaPrah/asterisk-ari-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/jbernavaprah/asterisk-ari-rs/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache-blue.svg)](LICENSE-APACHE)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT)
-[![Version](https://img.shields.io/crates/v/asterisk-ari-rs)](https://crates.io/crates/asterisk-ari-rs)
-[![Docs](https://docs.rs/asterisk-ari-rs/badge.svg)](https://docs.rs/asterisk-ari-rs)
+[![Version](https://img.shields.io/crates/v/asterisk-ari)](https://crates.io/crates/asterisk-ari-rs)
+[![Docs](https://docs.rs/asterisk-ari-rs/badge.svg)](https://docs.rs/asterisk-ari)
 
 A simple yet powerful library for managing the [Asterisk](https://www.asterisk.org/) ARI (Asterisk REST Interface). This library implements all Asterisk REST APIs and WebSocket events documented in the [ARI API Documentation](https://docs.asterisk.org/Latest_API/API_Documentation/Asterisk_REST_Interface/).
 
