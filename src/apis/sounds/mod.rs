@@ -13,7 +13,7 @@ impl<'c> Sounds<'c> {
     }
 }
 
-impl<'c> Sounds<'c> {
+impl Sounds<'_>  {
     /// List all sounds.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Sound>> {
         self.client.get("/sounds").await

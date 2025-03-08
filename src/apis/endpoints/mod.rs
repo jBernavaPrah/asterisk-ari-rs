@@ -14,7 +14,7 @@ impl<'c> Endpoints<'c> {
     }
 }
 
-impl<'c> Endpoints<'c> {
+impl Endpoints<'_> {
     /// List all endpoints.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Endpoint>> {
         self.client.get("/endpoints").await
@@ -45,11 +45,7 @@ impl<'c> Endpoints<'c> {
         request: params::SendMessageRequest,
     ) -> crate::errors::Result<()> {
         self.client
-            .put_with_query(
-                "/endpoints/sendMessage",
-                &request.variables,
-                &request,
-            )
+            .put_with_query("/endpoints/sendMessage", &request.variables, &request)
             .await
     }
 

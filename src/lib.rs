@@ -23,11 +23,11 @@
 //!
 //! ### Example
 //!
-//! ```rust
-//! use asterisk_ari_rs::apis::channels;
-//! use asterisk_ari_rs::AriClient;
-//! use asterisk_ari_rs::Config;
-//! use asterisk_ari_rs::Result;
+//! ```no_run
+//! use asterisk_ari::apis::channels;
+//! use asterisk_ari::AriClient;
+//! use asterisk_ari::Config;
+//! use asterisk_ari::Result;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<()> {

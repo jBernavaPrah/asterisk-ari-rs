@@ -1,7 +1,6 @@
 pub mod models;
 
 use crate::apis::client::Client;
-use serde::Serialize;
 
 pub struct Mailboxes<'c> {
     client: &'c Client,
@@ -13,7 +12,7 @@ impl<'c> Mailboxes<'c> {
     }
 }
 
-impl<'c> Mailboxes<'c> {
+impl Mailboxes<'_> {
     /// List all mailboxes.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Mailbox>> {
         self.client.get("/mailboxes").await

@@ -90,9 +90,7 @@ pub struct Filter {
     disallowed: Option<Vec<FilterType>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, new, Setters)]
-#[setters(prefix = "with_")]
-#[setters(into, strip_option)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, new)]
 pub struct FilterType {
     #[serde(rename = "type")]
     #[new(into)]

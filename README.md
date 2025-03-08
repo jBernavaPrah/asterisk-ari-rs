@@ -21,7 +21,7 @@ To use this library, add the following line to your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-asterisk-ari-rs = "x.y.z" # Replace x.y.z with the latest version
+asterisk-ari = "x.y.z" # Replace x.y.z with the latest version
 ```
 
 ## Usage
@@ -31,10 +31,10 @@ Here's a basic example of how to use the library:
 First spin the Asterisk server with ARI & HTTP enabled, or use the dockerized example. See [/asterisk](/asterisk/README.md) for more details.)
 
 ```rust
-use asterisk_ari_rs::apis::channels;
-use asterisk_ari_rs::AriClient;
-use asterisk_ari_rs::Config;
-use asterisk_ari_rs::Result;
+use asterisk_ari::apis::channels;
+use asterisk_ari::AriClient;
+use asterisk_ari::Config;
+use asterisk_ari::Result;
 use tracing::info;
 
 #[tokio::main]
@@ -93,7 +93,9 @@ For detailed usage and API documentation, visit the [docs](https://docs.rs/aster
 
 ## Configuration
 
-Ensure that your Asterisk instance is configured to enable ARI. Update your `ari.conf` file with the appropriate settings:
+Ensure that your Asterisk instance is configured to enable ARI. 
+
+Update your `ari.conf` file with the appropriate settings, example:
 
 ```ini
 [general]
@@ -133,11 +135,12 @@ cargo test
 Ensure your code adheres to the Rust style guide by running:
 
 ```bash
-cargo fmt -- --check
+cargo fmt -- --check && cargo clippy --all-targets --all-features -- -D warnings
 ```
 
 ## Roadmap
 
+- [ ] Add more tests.
 - [ ] Add more examples and documentation.
 
 ## Issues and Feedback

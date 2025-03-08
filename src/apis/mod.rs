@@ -92,7 +92,7 @@ where
 /// # Returns
 ///
 /// A result containing the serialized string or an error.
-fn concat_str<S>(x: &Vec<String>, s: S) -> Result<S::Ok, S::Error>
+fn concat_str<S>(x: &[String], s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {

@@ -42,7 +42,7 @@ pub struct OriginateRequest {
     #[new(default)]
     channel_id: Option<String>,
 
-    /// 	The unique id to assign the second channel when using local channels.
+    /// The unique id to assign the second channel when using local channels.
     #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
     other_channel_id: Option<String>,
@@ -287,7 +287,6 @@ pub struct DeleteRequest {
 #[derive(Clone, Debug, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-
 pub struct ContinueRequest {
     /// Channel's id
     #[serde(skip_serializing)]
@@ -304,7 +303,6 @@ pub struct ContinueRequest {
 #[derive(Clone, Debug, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-
 pub struct MoveRequest {
     /// Channel's id
     #[serde(skip_serializing)]
@@ -487,7 +485,6 @@ pub struct RecordRequest {
 #[derive(Clone, Debug, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-
 pub struct SnoopRequest {
     /// Channel's id
     #[serde(skip_serializing)]
@@ -514,7 +511,6 @@ pub struct SnoopRequest {
 #[derive(Clone, Debug, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-
 pub struct SnoopWithIdRequest {
     /// Channel's id
     #[serde(skip_serializing)]
@@ -547,7 +543,6 @@ pub struct SnoopWithIdRequest {
 #[derive(Clone, Debug, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-
 pub struct DialRequest {
     /// Channel's id
     #[serde(skip_serializing)]
@@ -560,7 +555,7 @@ pub struct DialRequest {
     #[new(default)]
     caller: Option<String>,
 
-    /// 	Dial timeout.
+    /// Dial timeout.
     #[serde(rename = "timeout", skip_serializing_if = "Option::is_none")]
     #[new(default)]
     timeout: Option<u32>,
@@ -609,7 +604,7 @@ pub struct ExternalMediaRequest {
     #[new(default)]
     transport: Option<Transport>,
 
-    /// Connection type (client/server)	.
+    /// Connection type (client/server).
     #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
     connection_type: Option<ConnectionType>,

@@ -14,7 +14,7 @@ impl<'c> Bridges<'c> {
     }
 }
 
-impl<'c> Bridges<'c> {
+impl Bridges<'_> {
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Bridge>> {
         self.client.get("/bridges").await
     }

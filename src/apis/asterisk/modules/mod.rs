@@ -12,7 +12,7 @@ impl<'c> Modules<'c> {
     }
 }
 
-impl<'c> Modules<'c> {
+impl Modules<'_> {
     /// List Asterisk modules.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Module>> {
         self.client.get("/asterisk/modules").await

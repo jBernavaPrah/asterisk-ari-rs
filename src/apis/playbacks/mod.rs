@@ -13,10 +13,10 @@ impl<'c> Playbacks<'c> {
     }
 }
 
-impl<'c> Playbacks<'c> {
+impl Playbacks<'_> {
     pub async fn get(
         &self,
-        playback_id: impl Into<String> + Sized,
+        playback_id: impl Into<String>,
     ) -> crate::errors::Result<Vec<models::Playback>> {
         self.client
             .get(format!("/playback/{}", playback_id.into()).as_str())
@@ -25,7 +25,7 @@ impl<'c> Playbacks<'c> {
 
     pub async fn control(
         &self,
-        playback_id: impl Into<String> + Sized,
+        playback_id: impl Into<String> ,
         operation: Operation,
     ) -> crate::errors::Result<()> {
         self.client
@@ -38,7 +38,7 @@ impl<'c> Playbacks<'c> {
     }
 
     /// Stop a playback
-    pub async fn stop(&self, playback_id: impl Into<String> + Sized) -> crate::errors::Result<()> {
+    pub async fn stop(&self, playback_id: impl Into<String>) -> crate::errors::Result<()> {
         self.client
             .delete(format!("/playback/{}", playback_id.into()).as_str())
             .await

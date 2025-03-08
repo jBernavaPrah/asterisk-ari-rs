@@ -18,9 +18,16 @@ Easily run Asterisk in docker container, in order to test the library.
     docker compose exec -ti asterisk /bin/bash 
     asterisk -r
     ```
-4) In your soft phone (e.g. Zoiper5 or MicroSIP) configure user **6001@localhost:5060** and 
+4) In your soft phone (e.g. Zoiper5 or MicroSIP) configure user `phone@localhost:5060` with password `mypassword` and 
+   - Check if you are connected to the asterisk server
    - Dial extension 100 for the hello world example.
+
+5) Run the example:
+    ```
+    cargo run --example monkeys-example
+    ```
    - Dial extension 101 for the monkeys sound example, managed by the ARI client.
+
 
 **NOTE:** Asterisk configs folder is based on [Asterisk getting started page](https://docs.asterisk.org/Getting-Started/Hello-World) with ARI setup added.
 For additional info about ARI see [here](https://docs.asterisk.org/Configuration/Interfaces/Asterisk-REST-Interface-ARI/Getting-Started-with-ARI).

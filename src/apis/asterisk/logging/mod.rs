@@ -14,7 +14,7 @@ impl<'c> Logging<'c> {
     }
 }
 
-impl<'c> Logging<'c> {
+impl Logging<'_> {
     /// Gets Asterisk log channel information.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::LogChannel>> {
         self.client.get("/asterisk/logging").await

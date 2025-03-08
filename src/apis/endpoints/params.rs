@@ -42,7 +42,6 @@ pub struct ReferRequest {
 #[setters(into, strip_option)]
 pub struct SendMessageRequest {
     /// The endpoint resource or technology specific URI to send the message to. Valid resources are pjsip, and xmpp.
-
     #[setters(skip)]
     #[new(into)]
     pub(crate) to: String,

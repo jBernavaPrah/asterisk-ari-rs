@@ -14,7 +14,7 @@ impl<'c> Applications<'c> {
     }
 }
 
-impl<'c> Applications<'c> {
+impl Applications<'_> {
     /// List all applications
     pub async fn list(&self) -> Result<Vec<models::Application>> {
         self.client.get("/applications").await

@@ -13,7 +13,7 @@ impl<'c> DeviceStats<'c> {
     }
 }
 
-impl<'c> DeviceStats<'c> {
+impl DeviceStats<'_> {
     pub async fn list(&self) -> crate::errors::Result<Vec<models::DeviceState>> {
         self.client.get("/deviceStates").await
     }

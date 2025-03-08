@@ -1,7 +1,7 @@
-use asterisk_ari_rs::apis::channels;
-use asterisk_ari_rs::AriClient;
-use asterisk_ari_rs::Config;
-use asterisk_ari_rs::Result;
+use asterisk_ari::apis::channels;
+use asterisk_ari::AriClient;
+use asterisk_ari::Config;
+use asterisk_ari::Result;
 use tracing::info;
 
 #[tokio::main]

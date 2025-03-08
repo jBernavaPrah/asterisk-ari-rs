@@ -12,7 +12,7 @@ impl<'c> Variables<'c> {
     }
 }
 
-impl<'c> Variables<'c> {
+impl Variables<'_> {
     /// Get the value of a global variable.
     pub async fn get(
         &self,

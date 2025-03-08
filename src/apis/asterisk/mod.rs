@@ -18,7 +18,7 @@ impl<'c> Asterisk<'c> {
     }
 }
 
-impl<'c> Asterisk<'c> {
+impl Asterisk<'_> {
     pub async fn info(&self) -> Result<models::AsteriskInfo> {
         self.client.get("/asterisk/info").await
     }

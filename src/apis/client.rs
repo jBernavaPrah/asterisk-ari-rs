@@ -413,7 +413,7 @@ impl Client {
             Ok(resp) => {
                 let body = resp.text().await?;
                 if body.is_empty() {
-                    return Ok(serde_json::from_str(&"null")?);
+                    return Ok(serde_json::from_str("null")?);
                 }
 
                 Ok(serde_json::from_str(&body)?)

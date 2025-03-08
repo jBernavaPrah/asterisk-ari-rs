@@ -14,7 +14,7 @@ impl<'c> Channels<'c> {
     }
 }
 
-impl<'c> Channels<'c> {
+impl Channels<'_> {
     /// List all active channels in Asterisk.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::Channel>> {
         self.client.get("/channels").await
@@ -421,13 +421,12 @@ impl<'c> Channels<'c> {
     }
 
     /// Start an External Media session.
-    pub async fn external_media(&self, request: params::ExternalMediaRequest) -> crate::errors::Result<()> {
+    pub async fn external_media(
+        &self,
+        request: params::ExternalMediaRequest,
+    ) -> crate::errors::Result<()> {
         self.client
-            .post_with_query(
-                "/channels/externalMedia",
-                &request.variables,
-                &request,
-            )
+            .post_with_query("/channels/externalMedia", &request.variables, &request)
             .await
     }
 }

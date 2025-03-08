@@ -30,7 +30,7 @@ impl<'c> StoredRecordings<'c> {
     }
 }
 
-impl<'c> StoredRecordings<'c> {
+impl StoredRecordings<'_> {
     /// List recordings that are complete.
     pub async fn list(&self) -> crate::errors::Result<Vec<models::StoredRecording>> {
         self.client.get("/recordings/stored").await
@@ -58,12 +58,12 @@ impl<'c> StoredRecordings<'c> {
     /// Get the file associated with the stored recording.
     pub async fn file(
         &self,
-        recording_name: impl Into<String> + Send,
+        _recording_name: impl Into<String> + Send,
     ) -> crate::errors::Result<Vec<u8>> {
         unimplemented!("This function is not implemented yet"); // todo implement first teh get_raw, so will return the raw bytes
-        self.client
-            .get(format!("/recordings/stored/{}/file", recording_name.into()).as_str())
-            .await
+        // self.client
+        //     .get(format!("/recordings/stored/{}/file", recording_name.into()).as_str())
+        //     .await
     }
 
     /// Copy a stored recording.
@@ -92,7 +92,7 @@ impl<'c> LiveRecordings<'c> {
     }
 }
 
-impl<'c> LiveRecordings<'c> {
+impl LiveRecordings<'_> {
     /// List live recordings
     pub async fn list(&self) -> crate::errors::Result<Vec<models::LiveRecording>> {
         self.client.get("/recordings/live").await

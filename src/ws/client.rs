@@ -16,7 +16,7 @@ use url::Url;
 /// WebSocket client for ARI.
 ///
 /// This struct manages the WebSocket connection to the ARI server.
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 pub struct Client {
     config: Config,
     stop_signal: CancellationToken,
@@ -47,7 +47,7 @@ impl Client {
     }
 
     /// Disconnects the WebSocket client.
-    pub fn disconnect(&self) -> () {
+    pub fn disconnect(&self) {
         self.stop_signal.cancel()
     }
 

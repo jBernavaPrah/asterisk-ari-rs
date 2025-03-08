@@ -13,7 +13,7 @@ impl<'c> Events<'c> {
     }
 }
 
-impl<'c> Events<'c> {
+impl Events<'_> {
     /// Generate a user event.
     pub async fn generate(&self, request: params::GenerateRequest) -> crate::errors::Result<()> {
         self.client
