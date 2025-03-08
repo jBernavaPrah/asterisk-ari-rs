@@ -1,6 +1,6 @@
 [package]
 name = "asterisk-ari"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Asterisk ARI client"
 repository = "https://github.com/jBernavaPrah/asterisk-ari-rs"
