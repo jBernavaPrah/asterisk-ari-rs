@@ -3,7 +3,7 @@ version: "3.9"
 services:
   asterisk:
     build:
-        context: ./asterisk
+        context: ./
         dockerfile: Dockerfile
     ports:
       - "5060:5060"

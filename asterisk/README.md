@@ -5,7 +5,7 @@ Easily run Asterisk in docker container, in order to test the library.
 **This is a testing docker, not for production use.**
 
 ## Usage
-1) Update the [docker-compose.yml](../docker-compose.yml) file, changing the NAT_ADDRESS with your local IP address.
+1) Update the [docker-compose.yml](docker-compose.yml) file, changing the NAT_ADDRESS with your local IP address.
 
 2) Execute the docker compose:
 
