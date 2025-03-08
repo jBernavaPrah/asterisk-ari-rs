@@ -25,7 +25,7 @@ impl Playbacks<'_> {
 
     pub async fn control(
         &self,
-        playback_id: impl Into<String> ,
+        playback_id: impl Into<String>,
         operation: Operation,
     ) -> crate::errors::Result<()> {
         self.client

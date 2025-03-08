@@ -61,9 +61,9 @@ impl StoredRecordings<'_> {
         _recording_name: impl Into<String> + Send,
     ) -> crate::errors::Result<Vec<u8>> {
         unimplemented!("This function is not implemented yet"); // todo implement first teh get_raw, so will return the raw bytes
-        // self.client
-        //     .get(format!("/recordings/stored/{}/file", recording_name.into()).as_str())
-        //     .await
+                                                                // self.client
+                                                                //     .get(format!("/recordings/stored/{}/file", recording_name.into()).as_str())
+                                                                //     .await
     }
 
     /// Copy a stored recording.

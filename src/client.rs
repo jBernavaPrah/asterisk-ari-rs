@@ -8,12 +8,9 @@ use std::sync::Arc;
 use tracing::debug;
 
 type Handler = Arc<
-    dyn Fn(
-        Arc<apis::client::Client>,
-        ws::models::Event,
-    ) -> Pin<Box<dyn Future<Output = ()> + Send>>
-    + Send
-    + Sync,
+    dyn Fn(Arc<apis::client::Client>, ws::models::Event) -> Pin<Box<dyn Future<Output = ()> + Send>>
+        + Send
+        + Sync,
 >;
 
 /// `AriClient` is a client for interacting with the Asterisk REST Interface (ARI).
@@ -22,10 +19,7 @@ type Handler = Arc<
 pub struct AriClient {
     client: Arc<apis::client::Client>,
     ws: Arc<ws::client::Client>,
-    event_handlers: HashMap<
-        String,
-        Handler,
-    >,
+    event_handlers: HashMap<String, Handler>,
 }
 
 impl AriClient {
