@@ -38,19 +38,13 @@ async fn main() -> Result<()> {
     info!("Ping: {:?}", client.asterisk().ping().await?);
     info!("Info: {:?}", client.asterisk().info().await?);
 
-    let _client = client.clone();
-    tokio::spawn(async move {
-        _client.start("my-ast-app".to_string()).await.unwrap();
-    });
+    client.start("my-ast-app".to_string()).await?;
 
-    tokio::time::sleep(std::time::Duration::from_secs(30)).await;
+    // simulate a long-running process...
+    tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
-    info!("Stopping client");
-
-    client.stop();
-
-    info!("Await client to stop");
-    tokio::time::sleep(std::time::Duration::from_secs(4)).await;
+    info!("Stopping ws");
+    client.stop().await?;
 
     Ok(())
 }

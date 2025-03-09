@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::future::Future;
 use std::ops::Deref;
 use std::pin::Pin;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use tracing::debug;
 
 type Handler = Arc<
@@ -18,43 +18,29 @@ type Handler = Arc<
 #[derive(Clone)]
 pub struct AriClient {
     client: Arc<apis::client::Client>,
-    ws: Arc<ws::client::Client>,
-    event_handlers: HashMap<String, Handler>,
+    ws: Arc<tokio::sync::Mutex<ws::client::Client>>,
+    event_handlers: Arc<RwLock<HashMap<String, Handler>>>,
 }
 
 impl AriClient {
     /// Creates a new `AriClient` with the given configuration.
-    ///
-    /// # Arguments
-    ///
-    /// * `config` - A configuration object for the ARI client.
-    ///
-    /// # Returns
-    ///
-    /// A new instance of `AriClient`.
     pub fn with_config(config: crate::config::Config) -> Self {
         AriClient {
             client: Arc::new(apis::client::Client::with_config(config.clone())),
-            ws: Arc::new(ws::client::Client::with_config(config)),
-            event_handlers: HashMap::new(),
+            ws: Arc::new(tokio::sync::Mutex::new(ws::client::Client::with_config(
+                config,
+            ))),
+            event_handlers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
 
     /// Registers a handler for unknown events.
-    ///
-    /// # Arguments
-    ///
-    /// * `handler` - A function that handles unknown events.
-    ///
-    /// # Returns
-    ///
-    /// A mutable reference to the `AriClient`.
     pub fn on_unknown_event<F, Fut>(&mut self, handler: F) -> &mut Self
     where
         F: Fn(Arc<apis::client::Client>, ws::models::Event) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = ()> + Send + 'static,
     {
-        self.event_handlers.insert(
+        self.event_handlers.write().unwrap().insert(
             "Unknown".to_string(),
             Arc::new(move |client, event| Box::pin(handler(client, event))),
         );
@@ -62,76 +48,60 @@ impl AriClient {
     }
 
     /// Registers a handler for a specific event.
-    ///
-    /// # Arguments
-    ///
-    /// * `key` - The event type as a string.
-    /// * `handler` - A function that handles the event.
-    ///
-    /// # Returns
-    ///
-    /// A mutable reference to the `AriClient`.
-    pub fn on_event<F, Fut>(&mut self, key: String, handler: F) -> &mut Self
+    pub fn on_event<F, Fut>(&mut self, key: impl Into<String>, handler: F) -> &mut Self
     where
         F: Fn(Arc<apis::client::Client>, ws::models::Event) -> Fut + Send + Sync + 'static,
         Fut: Future<Output = ()> + Send + 'static,
     {
-        self.event_handlers.insert(
-            key,
+        self.event_handlers.write().unwrap().insert(
+            key.into(),
             Arc::new(move |client, event| Box::pin(handler(client, event))),
         );
         self
     }
 
     /// Starts the ARI client and begins listening for events.
-    ///
-    /// # Arguments
-    ///
-    /// * `application_name` - The name of the ARI application.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` indicating success or failure.
-    pub async fn start(&self, application_name: String) -> crate::errors::Result<()> {
+    pub async fn start(
+        &mut self,
+        application_name: impl Into<String>,
+    ) -> crate::errors::Result<()> {
         let mut stream = self
             .ws
+            .lock()
+            .await
             .connect(ws::params::ListenRequest::new(application_name))
             .await?;
 
-        while let Some(event) = stream.next().await {
-            if let Some(handler) = self.event_handlers.get(&event.to_string()) {
-                handler(self.client.clone(), event).await;
-            } else {
-                // Log or handle unmatched events if necessary
-                debug!(
-                    "No handler registered for event type: {}",
-                    event.to_string()
-                );
+        let event_handlers = self.event_handlers.clone();
+        let client = self.client.clone();
+        tokio::task::spawn(async move {
+            while let Some(event) = stream.next().await {
+                // Get a read lock to safely access the handlers.
+                let maybe_handler = {
+                    let handlers = event_handlers.read().unwrap();
+                    handlers.get(&event.to_string()).cloned()
+                };
+
+                if let Some(handler) = maybe_handler {
+                    handler(client.clone(), event).await;
+                } else {
+                    debug!(
+                        "No handler registered for event type: {}",
+                        event.to_string()
+                    );
+                }
             }
-        }
+        });
 
         Ok(())
     }
 
     /// Stops the ARI client.
-    pub fn stop(&self) {
-        self.ws.disconnect();
-    }
-
-    /// Returns a reference to the WebSocket client.
-    ///
-    /// # Returns
-    ///
-    /// A reference to the WebSocket client.
-    pub fn ws(&self) -> &ws::client::Client {
-        &self.ws
+    pub async fn stop(&mut self) -> Result<(), crate::errors::AriError> {
+        self.ws.lock().await.disconnect().await
     }
 
     /// Returns a reference to the API client.
-    ///
-    /// # Returns
-    ///
-    /// A reference to the API client.
     pub fn client(&self) -> &apis::client::Client {
         &self.client
     }
@@ -139,12 +109,6 @@ impl AriClient {
 
 impl Deref for AriClient {
     type Target = apis::client::Client;
-
-    /// Dereferences the `AriClient` to the underlying API client.
-    ///
-    /// # Returns
-    ///
-    /// A reference to the API client.
     fn deref(&self) -> &Self::Target {
         &self.client
     }
@@ -156,14 +120,6 @@ macro_rules! create_event_handler {
         impl AriClient {
             $(
                 /// Registers a handler for the `$event_variant` event.
-                ///
-                /// # Arguments
-                ///
-                /// * `handler` - A function that handles the event.
-                ///
-                /// # Returns
-                ///
-                /// A mutable reference to the `AriClient`.
                 pub fn $event_name<F, Fut>(&mut self, handler: F) -> &mut Self
                 where
                     F: Fn(Arc<apis::client::Client>, ws::models::BaseEvent<ws::models::$event_variant>) -> Fut
@@ -172,19 +128,17 @@ macro_rules! create_event_handler {
                         + 'static,
                     Fut: Future<Output = ()> + Send + 'static,
                 {
-                    let handler = Arc::new(handler); // Wrap handler in Arc for shared ownership
-
+                    let handler = Arc::new(handler);
                     self.on_event(stringify!($event_variant).to_string(), move |client, event| {
-                        let handler = handler.clone(); // Clone Arc for use in the async block
+                        let handler = handler.clone();
                         async move {
                             if let ws::models::Event::$event_variant(e) = event {
                                 handler(client, e).await;
                             } else {
-                                unreachable!(); // Ensure safety for mismatched events
+                                unreachable!();
                             }
                         }
                     });
-
                     self
                 }
             )*

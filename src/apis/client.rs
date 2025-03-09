@@ -9,7 +9,7 @@ use std::fmt::Display;
 /// Represents the ARI client.
 ///
 /// This struct holds the configuration and HTTP client for making requests to the ARI API.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Client {
     /// Configuration for the ARI client.
     pub(crate) config: Config,

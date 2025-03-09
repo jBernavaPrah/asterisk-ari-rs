@@ -1,27 +1,38 @@
-use reqwest::header::InvalidHeaderValue;
 use reqwest::Error as ReqwError;
 use reqwest::StatusCode;
+use std::error::Error;
+use std::fmt::Display;
+use std::fmt::{Formatter, Result as FmtResult};
 use std::result;
+use std::sync::{MutexGuard, PoisonError};
+use thiserror::Error;
 use tokio_tungstenite::tungstenite::Error as WSError;
 use url::ParseError;
 
 /// Represents various errors that can occur in the ARI client.
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum AriError {
     /// Error during JSON serialization/deserialization.
-    Serde(serde_json::Error),
+    #[error("serde error: {0}")]
+    Serde(#[from] serde_json::Error),
     /// Error converting a byte array to a UTF-8 string.
-    Utf8(std::string::FromUtf8Error),
+    #[error("Conversion error: {0}")]
+    Utf8(#[from] std::string::FromUtf8Error),
     /// API-specific error.
+    #[error("Api Error: {0}")]
     Api(ApiError),
-    /// Invalid HTTP header value.
-    HttpInvalidHeader(InvalidHeaderValue),
     /// General HTTP error.
+    #[error("HTTP error: {0}")]
     Http(ReqwError),
     /// URL parsing error.
+    #[error("URL parse error: {0}")]
     UrlParse(ParseError),
     /// WebSocket error.
+    #[error("WebSocket error: {0}")]
     Websocket(WSError),
+    /// Internal error.
+    #[error("Internal error: {0}")]
+    Internal(String),
 }
 
 impl AriError {
@@ -50,36 +61,6 @@ pub struct ApiError {
     pub code: StatusCode,
     /// Optional content associated with the error.
     pub content: Option<String>,
-}
-
-impl From<serde_json::Error> for AriError {
-    /// Converts a `serde_json::Error` into an `AriError`.
-    ///
-    /// # Arguments
-    ///
-    /// * `e` - The `serde_json::Error` to convert.
-    ///
-    /// # Returns
-    ///
-    /// An `AriError` representing the JSON error.
-    fn from(e: serde_json::Error) -> Self {
-        AriError::Serde(e)
-    }
-}
-
-impl From<std::string::FromUtf8Error> for AriError {
-    /// Converts a `std::string::FromUtf8Error` into an `AriError`.
-    ///
-    /// # Arguments
-    ///
-    /// * `e` - The `std::string::FromUtf8Error` to convert.
-    ///
-    /// # Returns
-    ///
-    /// An `AriError` representing the UTF-8 conversion error.
-    fn from(e: std::string::FromUtf8Error) -> Self {
-        AriError::Utf8(e)
-    }
 }
 
 impl From<ParseError> for AriError {
@@ -112,21 +93,6 @@ impl From<WSError> for AriError {
     }
 }
 
-impl From<InvalidHeaderValue> for AriError {
-    /// Converts an `InvalidHeaderValue` into an `AriError`.
-    ///
-    /// # Arguments
-    ///
-    /// * `e` - The `InvalidHeaderValue` to convert.
-    ///
-    /// # Returns
-    ///
-    /// An `AriError` representing the invalid HTTP header value error.
-    fn from(e: InvalidHeaderValue) -> Self {
-        AriError::HttpInvalidHeader(e)
-    }
-}
-
 impl From<ReqwError> for AriError {
     /// Converts a `ReqwError` into an `AriError`.
     ///
@@ -141,3 +107,44 @@ impl From<ReqwError> for AriError {
         AriError::Http(e)
     }
 }
+
+impl<T: std::fmt::Display> From<tokio::sync::MutexGuard<'_, T>> for AriError {
+    /// Converts a `tokio::sync::MutexGuard<'_, T>` into an `AriError`.
+    ///
+    /// # Arguments
+    ///
+    /// * `e` - The `tokio::sync::MutexGuard<'_, T>` to convert.
+    ///
+    /// # Returns
+    ///
+    /// An `AriError` representing the poisoned mutex error.
+    fn from(e: tokio::sync::MutexGuard<'_, T>) -> Self {
+        AriError::Internal(format!("{}", e))
+    }
+}
+
+impl<T> From<PoisonError<MutexGuard<'_, T>>> for AriError {
+    /// Converts a `PoisonError<MutexGuard<'_, T>>` into an `AriError`.
+    ///
+    /// # Arguments
+    ///
+    /// * `e` - The `PoisonError<MutexGuard<'_, T>>` to convert.
+    ///
+    /// # Returns
+    ///
+    /// An `AriError` representing the poisoned mutex error.
+    fn from(e: PoisonError<MutexGuard<'_, T>>) -> Self {
+        AriError::Internal(format!("{}", e))
+    }
+}
+
+impl Display for ApiError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match &self.content {
+            Some(content) => write!(f, "API error (status {}): {}", self.code, content),
+            None => write!(f, "API error (status {})", self.code),
+        }
+    }
+}
+
+impl Error for ApiError {}
