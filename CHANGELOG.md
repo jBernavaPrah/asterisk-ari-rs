@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0](https://github.com/jBernavaPrah/asterisk-ari-rs/compare/v0.2.0...v0.3.0) - 2025-03-10
+
+### Added
+
+- Added on WS Client the retry and the await on the disconnect. Added managing the errors on callbacks (for now simply tracing::error). Fix minor api error.
+
 ## [0.2.0](https://github.com/jBernavaPrah/asterisk-ari-rs/compare/v0.1.1...v0.2.0) - 2025-03-09
 
 ### Added
