@@ -564,7 +564,6 @@ pub struct DialRequest {
 #[derive(Clone, Debug, Default, PartialEq, Serialize, new, Setters)]
 #[setters(prefix = "with_")]
 #[setters(into, strip_option)]
-#[serde(rename_all = "camelCase")]
 pub struct ExternalMediaRequest {
     /// Stasis Application to place channel into.
     #[setters(skip)]
@@ -595,24 +594,20 @@ pub struct ExternalMediaRequest {
     pub(crate) variables: Option<serde_json::Value>,
 
     /// Payload encapsulation protocol.
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
-    encapsulation: Option<Encapsulation>,
+    encapsulation: Encapsulation,
 
     /// Transport protocol.
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
-    transport: Option<Transport>,
+    transport: Transport,
 
     /// Connection type (client/server).
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
-    connection_type: Option<ConnectionType>,
+    connection_type: ConnectionType,
 
     /// External media direction.
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[new(default)]
-    direction: Option<Direction>,
+    direction: Direction,
 
     /// An arbitrary data field.
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -136,11 +136,11 @@ impl Client {
         O: DeserializeOwned,
     {
         let request_maker = || async {
-            Ok(self
-                .client
+            self.client
                 .get(self.url(path))
                 .headers(self.headers())
-                .build()?)
+                .build()
+                .map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -162,12 +162,12 @@ impl Client {
         Q: Serialize + ?Sized,
     {
         let request_maker = || async {
-            Ok(self
-                .client
+            self.client
                 .get(self.url(path))
                 .query(query)
                 .headers(self.headers())
-                .build()?)
+                .build()
+                .map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -187,11 +187,11 @@ impl Client {
         O: DeserializeOwned,
     {
         let request_maker = || async {
-            Ok(self
-                .client
+            self.client
                 .delete(self.url(path))
                 .headers(self.headers())
-                .build()?)
+                .build()
+                .map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -213,12 +213,12 @@ impl Client {
         Q: Serialize + ?Sized,
     {
         let request_maker = || async {
-            Ok(self
-                .client
+            self.client
                 .delete(self.url(path))
                 .query(query)
                 .headers(self.headers())
-                .build()?)
+                .build()
+                .map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -240,12 +240,11 @@ impl Client {
         O: DeserializeOwned,
     {
         let request_maker = || async {
-            Ok(self
-                .client
-                .post(self.url(path))
-                .headers(self.headers())
-                .json(&request)
-                .build()?)
+            let mut req = self.client.post(self.url(path)).headers(self.headers());
+            if !serde_json::to_value(&request)?.is_null() {
+                req = req.json(&request);
+            }
+            req.build().map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -274,13 +273,15 @@ impl Client {
         Q: Serialize + ?Sized,
     {
         let request_maker = || async {
-            Ok(self
+            let mut req = self
                 .client
                 .post(self.url(path))
                 .query(query)
-                .json(&request)
-                .headers(self.headers())
-                .build()?)
+                .headers(self.headers());
+            if !serde_json::to_value(&request)?.is_null() {
+                req = req.json(&request);
+            }
+            req.build().map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -309,13 +310,15 @@ impl Client {
         Q: Serialize + ?Sized,
     {
         let request_maker = || async {
-            Ok(self
+            let mut req = self
                 .client
                 .put(self.url(path))
-                .headers(self.headers())
                 .query(query)
-                .json(&request)
-                .build()?)
+                .headers(self.headers());
+            if !serde_json::to_value(&request)?.is_null() {
+                req = req.json(&request);
+            }
+            req.build().map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -337,12 +340,11 @@ impl Client {
         O: DeserializeOwned,
     {
         let request_maker = || async {
-            Ok(self
-                .client
-                .put(self.url(path))
-                .headers(self.headers())
-                .json(&request)
-                .build()?)
+            let mut req = self.client.put(self.url(path)).headers(self.headers());
+            if !serde_json::to_value(&request)?.is_null() {
+                req = req.json(&request);
+            }
+            req.build().map_err(|e| AriError::Internal(e.to_string()))
         };
 
         self.execute(request_maker).await
@@ -404,21 +406,28 @@ impl Client {
         M: Fn() -> Fut,
         Fut: core::future::Future<Output = Result<reqwest::Request, AriError>>,
     {
-        match self
+        let response = self
             .client
             .execute(request_maker().await?)
-            .await?
-            .error_for_status()
-        {
-            Ok(resp) => {
-                let body = resp.text().await?;
+            .await
+            .map_err(|e| AriError::Internal(e.to_string()))?;
+
+        match response.error_for_status_ref() {
+            Ok(_) => {
+                let body = response
+                    .text()
+                    .await
+                    .map_err(|e| AriError::Internal(e.to_string()))?;
                 if body.is_empty() {
                     return Ok(serde_json::from_str("null")?);
                 }
 
                 Ok(serde_json::from_str(&body)?)
             }
-            Err(e) => Err(e.into()),
+            Err(e) => Err(AriError::Http {
+                raw: e,
+                body: response.text().await.unwrap_or_default(),
+            }),
         }
     }
 }

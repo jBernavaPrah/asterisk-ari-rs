@@ -22,8 +22,13 @@ pub enum AriError {
     #[error("Api Error: {0}")]
     Api(ApiError),
     /// General HTTP error.
-    #[error("HTTP error: {0}")]
-    Http(ReqwError),
+    #[error("HTTP error: {raw} - body: {body}")]
+    Http {
+        /// The HTTP error.
+        raw: ReqwError,
+        /// The response body.
+        body: String,
+    },
     /// URL parsing error.
     #[error("URL parse error: {0}")]
     UrlParse(ParseError),
@@ -90,21 +95,6 @@ impl From<WSError> for AriError {
     /// An `AriError` representing the WebSocket error.
     fn from(e: WSError) -> Self {
         AriError::Websocket(e)
-    }
-}
-
-impl From<ReqwError> for AriError {
-    /// Converts a `ReqwError` into an `AriError`.
-    ///
-    /// # Arguments
-    ///
-    /// * `e` - The `ReqwError` to convert.
-    ///
-    /// # Returns
-    ///
-    /// An `AriError` representing the HTTP error.
-    fn from(e: ReqwError) -> Self {
-        AriError::Http(e)
     }
 }
 

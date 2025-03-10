@@ -2,7 +2,7 @@ use crate::apis::client::Client;
 use std::fmt::Display;
 
 pub mod models;
-mod params;
+pub mod params;
 
 pub struct Bridges<'c> {
     client: &'c Client,
@@ -53,7 +53,7 @@ impl Bridges<'_> {
     pub async fn delete(
         &self,
         bridge_id: impl Into<String> + Display + Send,
-    ) -> crate::errors::Result<models::Bridge> {
+    ) -> crate::errors::Result<()> {
         self.client
             .delete(format!("/bridges/{bridge_id}").as_str())
             .await
@@ -65,7 +65,7 @@ impl Bridges<'_> {
     ) -> crate::errors::Result<()> {
         self.client
             .post_with_query(
-                format!("/bridges/{}", request.bridge_id).as_str(),
+                format!("/bridges/{}/addChannel", request.bridge_id).as_str(),
                 vec![] as Vec<String>,
                 &request,
             )
@@ -79,7 +79,7 @@ impl Bridges<'_> {
     ) -> crate::errors::Result<()> {
         self.client
             .post_with_query(
-                format!("/bridges/{bridge_id}").as_str(),
+                format!("/bridges/{bridge_id}/removeChannel").as_str(),
                 vec![] as Vec<String>,
                 &[("channel", channel.into())],
             )

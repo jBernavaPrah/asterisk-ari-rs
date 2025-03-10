@@ -13,16 +13,12 @@ async fn main() -> Result<()> {
 
     let config = Config::new("http://localhost:8088", "asterisk", "asterisk");
 
-    let mut client = AriClient::with_config(config);
+    let mut client = AriClient::with_config(config.clone());
 
     client.on_stasis_start(|client, event| async move {
         println!("Handling StasisStart event: {:?}", event);
 
-        client
-            .channels()
-            .answer(&event.data.channel.id)
-            .await
-            .unwrap();
+        client.channels().answer(&event.data.channel.id).await?;
 
         client
             .channels()
@@ -30,8 +26,9 @@ async fn main() -> Result<()> {
                 &event.data.channel.id,
                 "sound:tt-monkeys",
             ))
-            .await
-            .unwrap();
+            .await?;
+
+        Ok(())
     });
 
     info!("Applications: {:?}", client.applications().list().await?);

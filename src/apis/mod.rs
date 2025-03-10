@@ -21,10 +21,13 @@ pub mod params {
     pub enum Direction {
         /// Both directions (incoming and outgoing).
         #[default]
+        #[serde(rename = "both")]
         Both,
         /// Outgoing direction.
+        #[serde(rename = "out")]
         Out,
         /// Incoming direction.
+        #[serde(rename = "in")]
         In,
     }
 

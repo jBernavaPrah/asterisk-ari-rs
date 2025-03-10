@@ -4,15 +4,13 @@ use crate::ws::{models, params};
 use futures_util::{SinkExt, StreamExt as _};
 use rand::random;
 use std::time::Duration;
-use tokio::time::interval;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::Stream;
 use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;
-use tracing::{debug, trace, warn};
+use tracing::{debug, error, info, trace, warn};
 use url::Url;
-
 #[derive(Debug)]
 pub struct Client {
     config: Config,
@@ -39,13 +37,12 @@ impl Client {
     pub async fn disconnect(&mut self) -> Result<(), AriError> {
         self.stop_signal.cancel();
 
-        // Acquire the lock and take the join handle out of the Option.
         if let Some(handle) = self._ws_join_handle.take() {
             return handle.await.unwrap_or_else(|e| {
                 warn!("error when waiting for ws join handle: {:#?}", e);
                 Err(AriError::Internal(e.to_string()))
             });
-        };
+        }
 
         Ok(())
     }
@@ -89,30 +86,37 @@ impl Client {
         debug!("websocket connected");
 
         let (mut ws_sender, mut ws_receiver) = ws_stream.split();
-        let mut refresh_interval = interval(Duration::from_millis(5000));
+        let mut refresh_interval = tokio::time::interval(Duration::from_millis(5000));
         let cancel_token = self.stop_signal.child_token();
         let (tx, rx) = tokio::sync::mpsc::channel(100);
 
-        // Store the join handle.
         self._ws_join_handle = Some(tokio::spawn(async move {
-            loop {
-                tokio::select! {
-                    _ = cancel_token.cancelled() => {
-                        match ws_sender.close().await {
-                                Ok(_) => {
-                                    debug!("WS connection closed");
-                                    break;
-                                },
-                                Err(e) => return Err(AriError::from(e)),
-                            }
-                    },
-                    msg = ws_receiver.next() => {
-                        match msg {
-                            Some(msg) => {
+            let mut connected = true;
+
+            'outer: loop {
+                while connected {
+                    tokio::select! {
+                        _ = cancel_token.cancelled() => {
+                                if let Err(e) = ws_sender.close().await {
+                                    return Err(AriError::from(e));
+                                }
+                                debug!("WS connection closed due to cancellation");
+                                break 'outer;
+
+                        },
+                        msg = ws_receiver.next() =>  {
+
+                                let Some(msg) = msg else {
+                                    // If the receiver returns None, mark connection as lost.
+                                    connected = false;
+                                    continue;
+                                };
+
                                 match msg {
                                     Ok(Message::Close(close_frame)) => {
-                                        debug!("Close message received, leaving the loop! {:#?}", close_frame);
-                                        break;
+                                        warn!("Close message received: {:#?}", close_frame);
+                                        connected = false;
+                                        continue;
                                     }
                                     Ok(Message::Pong(_)) => {},
                                     Ok(Message::Ping(data)) => {
@@ -123,7 +127,7 @@ impl Client {
                                         match serde_json::from_str::<models::Event>(&string_msg) {
                                             Ok(event) => {
                                                 if tx.send(event).await.is_err() {
-                                                    warn!("error when sending ARI event to the channel");
+                                                    debug!("Receiver closed the connection. Stopping WS client");
                                                     break;
                                                 }
                                             }
@@ -132,20 +136,49 @@ impl Client {
                                     }
                                     Err(e) => {
                                         warn!("Error when receiving websocket message: {:#?}", e);
-                                        break;
+                                        connected = false;
+                                        continue;
                                     }
-                                    _ => {
-                                        warn!("Unknown websocket message received: {:#?}", msg);
-                                    }
+                                    _ => {}
                                 }
-                            }
-                            None => break,
+
+                        },
+                        _ = refresh_interval.tick() => {
+
+                                let _ = ws_sender.send(Message::Ping(random::<[u8; 32]>().to_vec().into())).await;
+                                debug!("ARI connection ping sent");
+
                         }
-                    },
-                    _ = refresh_interval.tick() => {
-                        let _ = ws_sender.send(Message::Ping(random::<[u8; 32]>().to_vec().into())).await;
-                        debug!("ari connection ping sent");
                     }
+                }
+
+                let mut i = 0;
+                loop {
+                    i += 1;
+                    if cancel_token.is_cancelled() {
+                        debug!("Cancellation detected during reconnection attempts");
+                        break 'outer;
+                    }
+                    info!("Attempting to reconnect ({i})");
+
+                    match connect_async(url.to_string()).await {
+                        Ok((ws_stream, _)) => {
+                            info!("Reconnected successfully");
+                            connected = true;
+                            let (new_ws_sender, new_ws_receiver) = ws_stream.split();
+                            ws_sender = new_ws_sender;
+                            ws_receiver = new_ws_receiver;
+                            continue 'outer;
+                        }
+                        Err(e) => {
+                            error!("Failed to reconnect ({i}): {e}");
+                        }
+                    }
+                    tokio::time::sleep(std::cmp::min(
+                        Duration::from_millis(500 * i),
+                        Duration::from_secs(90),
+                    ))
+                    .await;
                 }
             }
 

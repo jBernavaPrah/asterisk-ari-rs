@@ -424,7 +424,7 @@ impl Channels<'_> {
     pub async fn external_media(
         &self,
         request: params::ExternalMediaRequest,
-    ) -> crate::errors::Result<()> {
+    ) -> crate::errors::Result<models::Channel> {
         self.client
             .post_with_query("/channels/externalMedia", &request.variables, &request)
             .await

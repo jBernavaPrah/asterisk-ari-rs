@@ -5,10 +5,13 @@ use std::future::Future;
 use std::ops::Deref;
 use std::pin::Pin;
 use std::sync::{Arc, RwLock};
-use tracing::debug;
+use tracing::{debug, error};
 
 type Handler = Arc<
-    dyn Fn(Arc<apis::client::Client>, ws::models::Event) -> Pin<Box<dyn Future<Output = ()> + Send>>
+    dyn Fn(
+            Arc<apis::client::Client>,
+            ws::models::Event,
+        ) -> Pin<Box<dyn Future<Output = crate::errors::Result<()>> + Send>>
         + Send
         + Sync,
 >;
@@ -38,7 +41,7 @@ impl AriClient {
     pub fn on_unknown_event<F, Fut>(&mut self, handler: F) -> &mut Self
     where
         F: Fn(Arc<apis::client::Client>, ws::models::Event) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = ()> + Send + 'static,
+        Fut: Future<Output = crate::errors::Result<()>> + Send + 'static,
     {
         self.event_handlers.write().unwrap().insert(
             "Unknown".to_string(),
@@ -51,7 +54,7 @@ impl AriClient {
     pub fn on_event<F, Fut>(&mut self, key: impl Into<String>, handler: F) -> &mut Self
     where
         F: Fn(Arc<apis::client::Client>, ws::models::Event) -> Fut + Send + Sync + 'static,
-        Fut: Future<Output = ()> + Send + 'static,
+        Fut: Future<Output = crate::errors::Result<()>> + Send + 'static,
     {
         self.event_handlers.write().unwrap().insert(
             key.into(),
@@ -83,7 +86,12 @@ impl AriClient {
                 };
 
                 if let Some(handler) = maybe_handler {
-                    handler(client.clone(), event).await;
+                    match handler(client.clone(), event).await {
+                        Ok(_) => {}
+                        Err(e) => {
+                            error!("Error handling event: {:?}", e);
+                        }
+                    }
                 } else {
                     debug!(
                         "No handler registered for event type: {}",
@@ -126,14 +134,14 @@ macro_rules! create_event_handler {
                         + Send
                         + Sync
                         + 'static,
-                    Fut: Future<Output = ()> + Send + 'static,
+                    Fut: Future<Output = crate::errors::Result<()>> + Send + 'static,
                 {
                     let handler = Arc::new(handler);
                     self.on_event(stringify!($event_variant).to_string(), move |client, event| {
                         let handler = handler.clone();
                         async move {
                             if let ws::models::Event::$event_variant(e) = event {
-                                handler(client, e).await;
+                                handler(client, e).await
                             } else {
                                 unreachable!();
                             }
