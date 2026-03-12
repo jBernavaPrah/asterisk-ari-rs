@@ -43,6 +43,8 @@ pub enum LiveRecordingState {
     Done,
     #[serde(rename = "failed")]
     Failed,
+    #[serde(rename = "queued")]
+    Queued,
 }
 
 /// StoredRecording:
