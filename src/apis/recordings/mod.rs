@@ -122,7 +122,7 @@ impl LiveRecordings<'_> {
     pub async fn stop(
         &self,
         recording_name: impl Into<String> + Send,
-    ) -> crate::errors::Result<models::StoredRecording> {
+    ) -> crate::errors::Result<()> {
         self.client
             .post(
                 format!("/recordings/live/{}/stop", recording_name.into()).as_str(),

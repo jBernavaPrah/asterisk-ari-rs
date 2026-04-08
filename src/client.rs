@@ -113,6 +113,11 @@ impl AriClient {
     pub fn client(&self) -> &apis::client::Client {
         &self.client
     }
+
+    /// Returns a reference to the API client.
+    pub fn client_arc(&self) -> Arc<apis::client::Client> {
+        self.client.clone()
+    }
 }
 
 impl Deref for AriClient {
