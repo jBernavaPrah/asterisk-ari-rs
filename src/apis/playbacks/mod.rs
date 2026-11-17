@@ -19,7 +19,7 @@ impl Playbacks<'_> {
         playback_id: impl Into<String>,
     ) -> crate::errors::Result<Vec<models::Playback>> {
         self.client
-            .get(format!("/playback/{}", playback_id.into()).as_str())
+            .get(format!("/playbacks/{}", playback_id.into()).as_str())
             .await
     }
 
@@ -30,7 +30,7 @@ impl Playbacks<'_> {
     ) -> crate::errors::Result<()> {
         self.client
             .post_with_query(
-                format!("/playback/{}/control", playback_id.into()).as_str(),
+                format!("/playbacks/{}/control", playback_id.into()).as_str(),
                 vec![] as Vec<String>,
                 &[("operation", operation)],
             )
@@ -40,7 +40,7 @@ impl Playbacks<'_> {
     /// Stop a playback
     pub async fn stop(&self, playback_id: impl Into<String>) -> crate::errors::Result<()> {
         self.client
-            .delete(format!("/playback/{}", playback_id.into()).as_str())
+            .delete(format!("/playbacks/{}", playback_id.into()).as_str())
             .await
     }
 }
